@@ -1,8 +1,22 @@
-import { Node } from './Node';
+import { Node, ViewNode} from './Node';
 import * as d3 from 'd3';
 import type { Canvas } from './Canvas';
+import * as cola from 'webcola';
 
-export class Link implements d3.SimulationLinkDatum<Node> {
+export class ViewLink implements cola.Link<ViewNode | number>{
+  source: number | ViewNode;
+  target: number | ViewNode;
+
+  model : Link;
+
+  constructor(source: number, target: number, model: Link) {
+    this.source = source;
+    this.target = target;
+    this.model = model
+  }
+}
+
+export class Link implements cola.Link<Node>,d3.SimulationLinkDatum<Node> {
   source: Node;
   target: Node;
 
