@@ -20,7 +20,7 @@ export class Link implements cola.Link<Node>,d3.SimulationLinkDatum<Node> {
   source: Node;
   target: Node;
 
-  color: string = 'gray';
+  color: string = 'silver';
   size: number = 10;
   label: string = ' '
 

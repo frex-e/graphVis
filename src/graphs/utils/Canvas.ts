@@ -6,7 +6,6 @@ import { Link, ViewLink } from './Link'
 
 import  { d3adaptor } from 'webcola'
 import cola from 'webcola'
-import { SourceNode } from 'source-map-js/lib/source-node';
 
 export type uuid = string | number;
 
@@ -22,8 +21,8 @@ export class Canvas {
   _tick : number = 1
   
   _svg : d3.Selection<SVGSVGElement, unknown, HTMLElement, any>;
-  _nodeSelection : d3.Selection<SVGGElement | d3.BaseType, ViewNode, SVGSVGElement, unknown> | undefined;
-  _linkSelection: d3.Selection<SVGGElement | d3.BaseType, ViewLink, SVGSVGElement, unknown> | undefined;
+  _nodeSelection : d3.Selection<SVGGElement | d3.BaseType, ViewNode, d3.BaseType, unknown> | undefined;
+  _linkSelection: d3.Selection<SVGGElement | d3.BaseType, ViewLink, d3.BaseType, unknown> | undefined;
   _nodes : Node[] = [];
   _links : Link[] = [];
 
@@ -37,48 +36,79 @@ export class Canvas {
   constructor(elementSelector: string) {
     this._svg = d3.select(elementSelector).append('svg');
 
+    this._svg.append("g").attr("class", "links");
+    this._svg.append("g").attr("class", "nodes");
+
     this._cola = d3adaptor(d3)
-      .linkDistance(20)
+      .linkDistance(15)
       .avoidOverlaps(true)
-      .size([1000, 1000])
+      .defaultNodeSize(6)
+
+    // this.centreViewbox()
   }
 
   private update() {
     this.createViews()
 
     // Cola update node links
-    this._cola.nodes(this._viewNodes).links(this._viewLinks).start(10, 10, 10);
+    this._cola.nodes(this._viewNodes).links(this._viewLinks).start(0,0,10);
     this._cola.on("tick", () => this.ticked())
 
-    // Data join links
-    this._linkSelection = this._svg
-      .selectAll(".link")
-      .data(this._viewLinks)
-      .join("g")
-      .attr("class", "link")
-
-    this._linkSelection.append("line").attr("class","main")
 
     // Data join nodes
     this._nodeSelection = this._svg
+      .select(".nodes")
       .selectAll(".node")
       .data(this._viewNodes)
       .join("g")
       .attr("class", "node")
+
+      // .join("g")
+      // .attr("class", "node")
 
     // Transform nodes
 
 
     // Shapes of nodes. Make rect slightly rounded
     this._nodeSelection.each((d,i,n) => {
+      d3.select(n[i]).select('.main').remove()
+
       if (d.model.shape === 'circle') {
-        d3.select(n[i]).append('circle')
+        d3.select(n[i]).append('circle').attr('class','main')
       } else if (d.model.shape === 'square') {
         d3.select(n[i]).append('rect')
           .attr('rx', 5)
           .attr('ry', 5)
+          .attr('class','main')
       }
     })
+
+    // Data join links
+    this._linkSelection = this._svg
+      .select(".links")
+      .selectAll(".link")
+      .data(this._viewLinks)
+      .join("g")
+      .attr("class", "link")
+
+    this._linkSelection.select(".main").remove()
+    this._linkSelection.append("line").attr("class","main")
+  }
+
+  private centreViewbox() {
+    // Centre viewbox at (0,0) but don't change zoom level
+    // const { x, y, width, height } = this._svg.node()?.getBBox() || {
+    //   x: 0,
+    //   y: 0,
+    //   width: 0,
+    //   height: 0,
+    // }
+
+    const svgWidth = this._svg.node()?.parentElement?.getBoundingClientRect().width || 0
+    const svgHeight = this._svg.node()?.parentElement?.getBoundingClientRect().height || 0
+
+
+    this._svg.attr('viewBox', `${-svgWidth/2} ${-svgHeight/2} ${svgWidth} ${svgHeight}`)
   }
 
   private fitViewbox() {
@@ -117,11 +147,15 @@ export class Canvas {
     this._nodeSelection?.attr("transform", (d) => `translate(${d.x},${d.y})`)
     
     // Shape & Size
-    this._nodeSelection?.select('circle').attr('r', (d) => d.model.size)
-    this._nodeSelection?.select('rect').attr('width', (d) => d.model.size).attr('height', (d) => d.model.size/2)
+    this._nodeSelection?.select('circle.main').attr('r', (d) => d.model.size)
+    this._nodeSelection?.select('rect.main').attr('width', (d) => d.model.size).attr('height', (d) => d.model.size/2)
 
     // Color
-    this._nodeSelection?.select('circle').attr('fill', (d) => d.model.color)
+    this._nodeSelection?.select('.main').attr('fill', (d) => d.model.color)
+
+    // White outline
+    this._nodeSelection?.select('.main').attr('stroke', 'white')
+    this._nodeSelection?.select('.main').attr('stroke-width', 0.5)
 
     // Links ---------------------------------------------------------------------
     // Position
@@ -134,7 +168,7 @@ export class Canvas {
     // Color
     this._linkSelection?.select('line').attr('stroke', (d) => d.model.color)
 
-    // Fit viewbox
+    // // Fit viewbox
     this.fitViewbox()
 
     console.log(this._tick++)

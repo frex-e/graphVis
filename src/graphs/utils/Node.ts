@@ -30,13 +30,13 @@ export class Node implements d3.SimulationNodeDatum,cola.Node {
   id: uuid;
   x: number = 0;
   y: number = 0;
-  vx: number = 10;
-  vy: number = 10;
+  vx: number = 30;
+  vy: number = 30;
   fx: number | null | undefined;
   fy: number | null | undefined;
 
   shape: Shape = 'circle';
-  size = 5;
+  size = 4;
   color: string = 'gray';
 
   links : Link[] = [];
