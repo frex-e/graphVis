@@ -1,9 +1,9 @@
+import * as d3 from 'd3';
+
 export const fitGraphViewbox = (
   svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>,
   zoom : number
 ) => {
-  console.log(svg.node()?.getBBox())
-
   const { x, y, width, height } = svg.node()?.getBBox() || {
     x: 0,
     y: 0,
@@ -23,14 +23,3 @@ export const fitGraphViewbox = (
   svg.attr('height',svgHeight)
   svg.attr('width',svgWidth)
 };
-
-export interface Node {
-  id: number;
-  x: number;
-  y: number;
-}
-
-export interface Link {
-  source: number;
-  target: number;
-}
