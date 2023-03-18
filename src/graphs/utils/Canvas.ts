@@ -1,4 +1,5 @@
 // TODO: Edges, Non-force layout, Draggable, Seperate View Links/Nodes and Model Links/Nodes
+// Animation Queueing.
 
 import * as d3 from 'd3';
 import { Node,ViewNode } from './Node';
@@ -51,7 +52,7 @@ export class Canvas {
     this.createViews()
 
     // Cola update node links
-    this._cola.nodes(this._viewNodes).links(this._viewLinks).start(0,0,10);
+    this._cola.nodes(this._viewNodes).links(this._viewLinks).start(0,0,3);
     this._cola.on("tick", () => this.ticked())
 
 
@@ -172,7 +173,6 @@ export class Canvas {
     this.fitViewbox()
 
     console.log(this._tick++)
-    console.log(this._viewNodes)
   }
 
   createViews() {
